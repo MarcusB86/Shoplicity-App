@@ -7,4 +7,24 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Create index on email for faster lookups
-CREATE INDEX IF NOT EXISTS users_email_idx ON users(email); 
+CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);
+
+-- Create products table
+CREATE TABLE IF NOT EXISTS products (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    image_url VARCHAR(255),
+    category VARCHAR(100),
+    condition VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index on user_id for faster lookups
+CREATE INDEX IF NOT EXISTS products_user_id_idx ON products(user_id);
+
+-- Create index on category for faster filtering
+CREATE INDEX IF NOT EXISTS products_category_idx ON products(category); 

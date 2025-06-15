@@ -31,12 +31,14 @@ const Navbar = () => {
         <Box>
           {user ? (
             <>
-              <Typography
-                component="span"
+              <Button
+                color="inherit"
+                component={RouterLink}
+                to="/profile"
                 sx={{ mr: 2 }}
               >
-                {user.email}
-              </Typography>
+                Profile
+              </Button>
               <Button
                 color="inherit"
                 onClick={logout}
@@ -50,6 +52,7 @@ const Navbar = () => {
                 color="inherit"
                 component={RouterLink}
                 to="/login"
+                sx={{ mr: 2 }}
               >
                 Login
               </Button>
