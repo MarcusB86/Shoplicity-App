@@ -51,7 +51,7 @@ router.put('/:id', auth, async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        if (product.user_id !== req.user.id) {
+        if (product.seller_id !== req.user.id) {
             return res.status(403).json({ message: 'Not authorized' });
         }
         const updatedProduct = await Product.update(req.params.id, req.body);
@@ -68,7 +68,7 @@ router.delete('/:id', auth, async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        if (product.user_id !== req.user.id) {
+        if (product.seller_id !== req.user.id) {
             return res.status(403).json({ message: 'Not authorized' });
         }
         await Product.delete(req.params.id);

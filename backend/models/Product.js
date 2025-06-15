@@ -9,7 +9,7 @@ class Product {
             console.log('Creating product with data:', { userId, title, description, price, imageUrl, category, condition }); // Debug log
             
             const query = `
-                INSERT INTO products (user_id, title, description, price, image_url, category, condition)
+                INSERT INTO products (seller_id, title, description, price, image_url, category, condition)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
                 RETURNING *
             `;
@@ -29,7 +29,7 @@ class Product {
         const query = `
             SELECT p.*, u.email as seller_email
             FROM products p
-            JOIN users u ON p.user_id = u.id
+            JOIN users u ON p.seller_id = u.id
             ORDER BY p.created_at DESC
         `;
         const { rows } = await pool.query(query);
@@ -39,7 +39,7 @@ class Product {
     static async findByUserId(userId) {
         const query = `
             SELECT * FROM products
-            WHERE user_id = $1
+            WHERE seller_id = $1
             ORDER BY created_at DESC
         `;
         const { rows } = await pool.query(query, [userId]);
@@ -50,7 +50,7 @@ class Product {
         const query = `
             SELECT p.*, u.email as seller_email
             FROM products p
-            JOIN users u ON p.user_id = u.id
+            JOIN users u ON p.seller_id = u.id
             WHERE p.id = $1
         `;
         const { rows } = await pool.query(query, [id]);

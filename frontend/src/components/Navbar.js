@@ -7,7 +7,10 @@ import {
   Typography,
   Button,
   Box,
+  IconButton,
+  Badge
 } from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -28,17 +31,25 @@ const Navbar = () => {
           Shoplicity
         </Typography>
 
-        <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {user ? (
             <>
               <Button
                 color="inherit"
                 component={RouterLink}
                 to="/profile"
-                sx={{ mr: 2 }}
               >
                 Profile
               </Button>
+              <IconButton
+                color="inherit"
+                component={RouterLink}
+                to="/cart"
+              >
+                <Badge badgeContent={0} color="error">
+                  <ShoppingCartIcon />
+                </Badge>
+              </IconButton>
               <Button
                 color="inherit"
                 onClick={logout}
@@ -52,7 +63,6 @@ const Navbar = () => {
                 color="inherit"
                 component={RouterLink}
                 to="/login"
-                sx={{ mr: 2 }}
               >
                 Login
               </Button>

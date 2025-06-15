@@ -6,6 +6,7 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Profile from './components/Profile';
 import ProductList from './components/ProductList';
+import Cart from './components/Cart';
 import './App.css';
 
 // Protected Route component
@@ -35,6 +36,11 @@ function App() {
                         <Route path="/profile" element={
                             <ProtectedRoute>
                                 <Profile />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/cart" element={
+                            <ProtectedRoute>
+                                <Cart />
                             </ProtectedRoute>
                         } />
                         <Route path="/" element={<ProductList />} />

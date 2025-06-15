@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import {
     Container,
@@ -9,14 +10,24 @@ import {
     Typography,
     TextField,
     MenuItem,
-    Box
+    Box,
+    Button,
+    Snackbar,
+    Alert
 } from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const ProductList = () => {
+    const { user } = useAuth();
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('');
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
 
     const categories = [
         'All',
@@ -64,6 +75,44 @@ const ProductList = () => {
         }
 
         setFilteredProducts(filtered);
+    };
+
+    const handleAddToCart = async (productId) => {
+        if (!user) {
+            setSnackbar({
+                open: true,
+                message: 'Please log in to add items to cart',
+                severity: 'error'
+            });
+            return;
+        }
+
+        try {
+            await axios.post('http://localhost:5000/api/cart/add', 
+                { productId, quantity: 1 },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+            setSnackbar({
+                open: true,
+                message: 'Item added to cart',
+                severity: 'success'
+            });
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            setSnackbar({
+                open: true,
+                message: 'Error adding item to cart',
+                severity: 'error'
+            });
+        }
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbar({ ...snackbar, open: false });
     };
 
     return (
@@ -128,11 +177,32 @@ const ProductList = () => {
                                 <Typography variant="body2" color="text.secondary">
                                     Seller: {product.seller_email}
                                 </Typography>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<ShoppingCartIcon />}
+                                    onClick={() => handleAddToCart(product.id)}
+                                    sx={{ mt: 2 }}
+                                    fullWidth
+                                >
+                                    Add to Cart
+                                </Button>
                             </CardContent>
                         </Card>
                     </Grid>
                 ))}
             </Grid>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

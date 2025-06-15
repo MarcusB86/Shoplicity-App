@@ -15,13 +15,17 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    MenuItem
+    MenuItem,
+    IconButton
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const Profile = () => {
     const { user } = useAuth();
     const [products, setProducts] = useState([]);
     const [open, setOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
     const [newProduct, setNewProduct] = useState({
         title: '',
         description: '',
@@ -67,13 +71,42 @@ const Profile = () => {
     };
 
     const handleOpen = () => {
-        console.log('Opening dialog'); // Debug log
+        setEditingProduct(null);
+        setNewProduct({
+            title: '',
+            description: '',
+            price: '',
+            imageUrl: '',
+            category: '',
+            condition: ''
+        });
+        setOpen(true);
+    };
+
+    const handleEdit = (product) => {
+        setEditingProduct(product);
+        setNewProduct({
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            imageUrl: product.image_url || '',
+            category: product.category,
+            condition: product.condition
+        });
         setOpen(true);
     };
 
     const handleClose = () => {
-        console.log('Closing dialog'); // Debug log
         setOpen(false);
+        setEditingProduct(null);
+        setNewProduct({
+            title: '',
+            description: '',
+            price: '',
+            imageUrl: '',
+            category: '',
+            condition: ''
+        });
     };
 
     const handleChange = (e) => {
@@ -87,40 +120,38 @@ const Profile = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            console.log('Token:', token); // Debug log
-            console.log('Product data:', newProduct); // Debug log
-            
-            const response = await axios.post('http://localhost:5000/api/products', newProduct, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            console.log('Response:', response.data); // Debug log
+            if (editingProduct) {
+                await axios.put(`http://localhost:5000/api/products/${editingProduct.id}`, newProduct, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+            } else {
+                await axios.post('http://localhost:5000/api/products', newProduct, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+            }
             handleClose();
             fetchProducts();
-            setNewProduct({
-                title: '',
-                description: '',
-                price: '',
-                imageUrl: '',
-                category: '',
-                condition: ''
-            });
         } catch (error) {
-            console.error('Error creating product:', error.response?.data || error.message);
+            console.error('Error saving product:', error.response?.data || error.message);
         }
     };
 
     const handleDelete = async (productId) => {
-        try {
-            await axios.delete(`http://localhost:5000/api/products/${productId}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            fetchProducts();
-        } catch (error) {
-            console.error('Error deleting product:', error);
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            try {
+                await axios.delete(`http://localhost:5000/api/products/${productId}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                fetchProducts();
+            } catch (error) {
+                console.error('Error deleting product:', error);
+            }
         }
     };
 
@@ -171,15 +202,22 @@ const Profile = () => {
                                 <Typography variant="body2" color="text.secondary">
                                     Condition: {product.condition}
                                 </Typography>
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    size="small"
-                                    onClick={() => handleDelete(product.id)}
-                                    sx={{ mt: 1 }}
-                                >
-                                    Delete
-                                </Button>
+                                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                                    <IconButton
+                                        color="primary"
+                                        onClick={() => handleEdit(product)}
+                                        size="small"
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        color="error"
+                                        onClick={() => handleDelete(product.id)}
+                                        size="small"
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Box>
                             </CardContent>
                         </Card>
                     </Grid>
@@ -192,7 +230,9 @@ const Profile = () => {
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>Add New Product</DialogTitle>
+                <DialogTitle>
+                    {editingProduct ? 'Edit Product' : 'Add New Product'}
+                </DialogTitle>
                 <DialogContent>
                     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
                         <TextField
@@ -275,7 +315,7 @@ const Profile = () => {
                         color="primary"
                         disabled={!newProduct.title || !newProduct.description || !newProduct.price || !newProduct.category || !newProduct.condition}
                     >
-                        Add Product
+                        {editingProduct ? 'Save Changes' : 'Add Product'}
                     </Button>
                 </DialogActions>
             </Dialog>
