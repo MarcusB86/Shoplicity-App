@@ -7,6 +7,7 @@ import Signup from './components/Signup';
 import Profile from './components/Profile';
 import ProductList from './components/ProductList';
 import Cart from './components/Cart';
+import Checkout from './components/Checkout';
 import './App.css';
 
 // Protected Route component
@@ -41,6 +42,11 @@ function App() {
                         <Route path="/cart" element={
                             <ProtectedRoute>
                                 <Cart />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/checkout" element={
+                            <ProtectedRoute>
+                                <Checkout />
                             </ProtectedRoute>
                         } />
                         <Route path="/" element={<ProductList />} />

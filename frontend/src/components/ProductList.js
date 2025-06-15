@@ -1,21 +1,64 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import {
     Container,
+    Typography,
     Grid,
     Card,
     CardContent,
     CardMedia,
-    Typography,
     TextField,
     MenuItem,
     Box,
     Button,
     Snackbar,
-    Alert
+    Alert,
+    Fade,
+    Zoom,
+    Grow,
+    Paper
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { styled } from '@mui/material/styles';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+const StyledCard = styled(Card)(({ theme }) => ({
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+    '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: theme.shadows[8],
+    },
+}));
+
+const StyledCardMedia = styled(CardMedia)({
+    height: 200,
+    backgroundSize: 'contain',
+    backgroundPosition: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: '16px',
+});
+
+const StyledCardContent = styled(CardContent)({
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+});
+
+const StyledButton = styled(Button)(({ theme }) => ({
+    margin: theme.spacing(1),
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+        transform: 'scale(1.05)',
+    },
+}));
 
 const ProductList = () => {
     const { user } = useAuth();
@@ -28,6 +71,7 @@ const ProductList = () => {
         message: '',
         severity: 'success'
     });
+    const navigate = useNavigate();
 
     const categories = [
         'All',
@@ -77,6 +121,17 @@ const ProductList = () => {
         setFilteredProducts(filtered);
     };
 
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/products/${id}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            fetchProducts();
+        } catch (error) {
+            console.error('Error deleting product:', error);
+        }
+    };
+
     const handleAddToCart = async (productId) => {
         if (!user) {
             setSnackbar({
@@ -116,79 +171,89 @@ const ProductList = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" sx={{ mb: 2 }}>All Products</Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                        <TextField
-                            fullWidth
-                            label="Search Products"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                        <TextField
-                            fullWidth
-                            select
-                            label="Category"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Fade in timeout={1000}>
+                <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h4" component="h1" gutterBottom>
+                        Products
+                    </Typography>
+                    {user && (
+                        <StyledButton
+                            variant="contained"
+                            color="primary"
+                            startIcon={<AddIcon />}
+                            onClick={() => navigate('/add-product')}
                         >
-                            {categories.map((cat) => (
-                                <MenuItem key={cat} value={cat}>
-                                    {cat}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                </Grid>
-            </Box>
+                            Add Product
+                        </StyledButton>
+                    )}
+                </Box>
+            </Fade>
 
             <Grid container spacing={3}>
-                {filteredProducts.map((product) => (
-                    <Grid item xs={12} sm={6} md={4} key={product.id}>
-                        <Card>
-                            {product.image_url && (
-                                <CardMedia
-                                    component="img"
-                                    height="200"
+                {filteredProducts.map((product, index) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+                        <Grow in timeout={1000} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 1000 + index * 100 }}>
+                            <StyledCard>
+                                <StyledCardMedia
                                     image={product.image_url}
-                                    alt={product.title}
+                                    title={product.title}
                                 />
-                            )}
-                            <CardContent>
-                                <Typography gutterBottom variant="h6">
-                                    {product.title}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    {product.description}
-                                </Typography>
-                                <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-                                    ${product.price}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Category: {product.category}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Condition: {product.condition}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Seller: {product.seller_email}
-                                </Typography>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    startIcon={<ShoppingCartIcon />}
-                                    onClick={() => handleAddToCart(product.id)}
-                                    sx={{ mt: 2 }}
-                                    fullWidth
-                                >
-                                    Add to Cart
-                                </Button>
-                            </CardContent>
-                        </Card>
+                                <StyledCardContent>
+                                    <Box>
+                                        <Typography gutterBottom variant="h6" component="h2" noWrap>
+                                            {product.title}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                            {product.description}
+                                        </Typography>
+                                        <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
+                                            ${product.price}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Category: {product.category}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Condition: {product.condition}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        {user && user.id === product.seller_id ? (
+                                            <>
+                                                <StyledButton
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<EditIcon />}
+                                                    onClick={() => navigate(`/edit-product/${product.id}`)}
+                                                >
+                                                    Edit
+                                                </StyledButton>
+                                                <StyledButton
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="error"
+                                                    startIcon={<DeleteIcon />}
+                                                    onClick={() => handleDelete(product.id)}
+                                                >
+                                                    Delete
+                                                </StyledButton>
+                                            </>
+                                        ) : (
+                                            <StyledButton
+                                                size="small"
+                                                variant="contained"
+                                                color="primary"
+                                                startIcon={<ShoppingCartIcon />}
+                                                onClick={() => handleAddToCart(product.id)}
+                                                fullWidth
+                                            >
+                                                Add to Cart
+                                            </StyledButton>
+                                        )}
+                                    </Box>
+                                </StyledCardContent>
+                            </StyledCard>
+                        </Grow>
                     </Grid>
                 ))}
             </Grid>
@@ -198,8 +263,16 @@ const ProductList = () => {
                 autoHideDuration={6000}
                 onClose={handleCloseSnackbar}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                TransitionComponent={Zoom}
             >
-                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+                <Alert 
+                    onClose={handleCloseSnackbar} 
+                    severity={snackbar.severity}
+                    sx={{ 
+                        width: '100%',
+                        boxShadow: 3
+                    }}
+                >
                     {snackbar.message}
                 </Alert>
             </Snackbar>
