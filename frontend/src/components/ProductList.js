@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
 import {
     Container,
     Typography,
@@ -25,6 +24,7 @@ import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import api from '../utils/api';
 
 const StyledCard = styled(Card)(({ theme }) => ({
     height: '100%',
@@ -71,6 +71,8 @@ const ProductList = () => {
         message: '',
         severity: 'success'
     });
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     const categories = [
@@ -94,11 +96,18 @@ const ProductList = () => {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/products');
+            setLoading(true);
+            console.log('Fetching products...');
+            const response = await api.get('/api/products');
+            console.log('Products response:', response.data);
             setProducts(response.data);
             setFilteredProducts(response.data);
+            setError(null);
         } catch (error) {
             console.error('Error fetching products:', error);
+            setError(error.response?.data?.message || 'Failed to fetch products');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -123,12 +132,11 @@ const ProductList = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/products/${id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await api.delete(`/api/products/${id}`);
             fetchProducts();
         } catch (error) {
             console.error('Error deleting product:', error);
+            setError(error.response?.data?.message || 'Failed to delete product');
         }
     };
 
@@ -143,14 +151,7 @@ const ProductList = () => {
         }
 
         try {
-            await axios.post('http://localhost:5000/api/cart/add', 
-                { productId, quantity: 1 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                }
-            );
+            await api.post('/api/cart/add', { productId, quantity: 1 });
             setSnackbar({
                 open: true,
                 message: 'Item added to cart',
@@ -158,11 +159,7 @@ const ProductList = () => {
             });
         } catch (error) {
             console.error('Error adding to cart:', error);
-            setSnackbar({
-                open: true,
-                message: 'Error adding item to cart',
-                severity: 'error'
-            });
+            setError(error.response?.data?.message || 'Failed to add to cart');
         }
     };
 
@@ -189,6 +186,26 @@ const ProductList = () => {
                     )}
                 </Box>
             </Fade>
+
+            {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                    <Typography>Loading products...</Typography>
+                </Box>
+            )}
+
+            {error && (
+                <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
+                    <Alert severity="error" onClose={() => setError(null)}>
+                        {error}
+                    </Alert>
+                </Snackbar>
+            )}
+
+            {!loading && products.length === 0 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                    <Typography>No products found</Typography>
+                </Box>
+            )}
 
             <Grid container spacing={3}>
                 {filteredProducts.map((product, index) => (
