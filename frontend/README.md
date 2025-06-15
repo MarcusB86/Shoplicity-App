@@ -74,7 +74,7 @@ npm install
 ```bash
 # Backend (.env)
 PORT=5000
-DATABASE_URL=postgresql://username:password@localhost:5432/shoplicity
+DATABASE_URL=postgresql://marcus_86:BlckMamba187@localhost:5432/shoplicity
 JWT_SECRET=your_jwt_secret
 STRIPE_SECRET_KEY=your_stripe_secret_key
 AWS_ACCESS_KEY=your_aws_access_key
