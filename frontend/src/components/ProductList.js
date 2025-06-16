@@ -151,15 +151,21 @@ const ProductList = () => {
         }
 
         try {
-            await api.post('/api/cart/add', { productId, quantity: 1 });
+            console.log('Adding to cart:', { productId, quantity: 1 });
+            const response = await api.post('/api/cart/add', { productId, quantity: 1 });
+            console.log('Add to cart response:', response.data);
             setSnackbar({
                 open: true,
-                message: 'Item added to cart',
+                message: 'Item added to cart successfully!',
                 severity: 'success'
             });
         } catch (error) {
-            console.error('Error adding to cart:', error);
-            setError(error.response?.data?.message || 'Failed to add to cart');
+            console.error('Error adding to cart:', error.response?.data || error);
+            setSnackbar({
+                open: true,
+                message: error.response?.data?.message || 'Failed to add item to cart',
+                severity: 'error'
+            });
         }
     };
 
@@ -255,7 +261,7 @@ const ProductList = () => {
                                                     Delete
                                                 </StyledButton>
                                             </>
-                                        ) : (
+                                        ) : user ? (
                                             <StyledButton
                                                 size="small"
                                                 variant="contained"
@@ -265,6 +271,17 @@ const ProductList = () => {
                                                 fullWidth
                                             >
                                                 Add to Cart
+                                            </StyledButton>
+                                        ) : (
+                                            <StyledButton
+                                                size="small"
+                                                variant="contained"
+                                                color="primary"
+                                                startIcon={<ShoppingCartIcon />}
+                                                onClick={() => navigate('/login')}
+                                                fullWidth
+                                            >
+                                                Login to Add to Cart
                                             </StyledButton>
                                         )}
                                     </Box>

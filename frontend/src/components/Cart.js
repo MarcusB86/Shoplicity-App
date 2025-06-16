@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../utils/api';
 import {
     Container,
     Typography,
@@ -46,16 +46,15 @@ const Cart = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchCart();
-    }, []);
+        if (user) {
+            fetchCart();
+        }
+    }, [user]);
 
     const fetchCart = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/cart', {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            setLoading(true);
+            const response = await api.get('/api/cart');
             setCartItems(response.data);
             setLoading(false);
         } catch (error) {
@@ -67,14 +66,7 @@ const Cart = () => {
     const handleUpdateQuantity = async (productId, newQuantity) => {
         if (newQuantity < 1) return;
         try {
-            await axios.put(`http://localhost:5000/api/cart/update/${productId}`, 
-                { quantity: newQuantity },
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                }
-            );
+            await api.put(`/api/cart/update/${productId}`, { quantity: newQuantity });
             fetchCart();
         } catch (error) {
             console.error('Error updating quantity:', error);
@@ -83,11 +75,7 @@ const Cart = () => {
 
     const handleRemoveItem = async (productId) => {
         try {
-            await axios.delete(`http://localhost:5000/api/cart/remove/${productId}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            await api.delete(`/api/cart/remove/${productId}`);
             fetchCart();
         } catch (error) {
             console.error('Error removing item:', error);
@@ -97,11 +85,7 @@ const Cart = () => {
     const handleClearCart = async () => {
         if (window.confirm('Are you sure you want to clear your cart?')) {
             try {
-                await axios.delete('http://localhost:5000/api/cart/clear', {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                await api.delete('/api/cart/clear');
                 fetchCart();
             } catch (error) {
                 console.error('Error clearing cart:', error);
