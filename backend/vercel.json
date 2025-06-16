@@ -1,40 +1,22 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["backend/**"],
-        "maxLambdaSize": "15mb"
+    "version": 2,
+    "builds": [
+      {
+        "src": "server.js",
+        "use": "@vercel/node",
+        "config": {
+          "includeFiles": ["backend/**"],
+          "maxLambdaSize": "15mb"
+        }
       }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/test-db",
-      "dest": "server.js"
-    },
-    {
-      "src": "/api/health",
-      "dest": "server.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "server.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "api/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 10
+    ],
+    "routes": [
+      { "src": "/api/test-db", "dest": "server.js" },
+      { "src": "/api/health", "dest": "server.js" },
+      { "src": "/api/(.*)", "dest": "server.js" },
+      { "src": "/(.*)", "dest": "server.js" }
+    ],
+    "env": {
+      "NODE_ENV": "production"
     }
   }
-} 
