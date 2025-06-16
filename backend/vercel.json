@@ -3,10 +3,22 @@
   "builds": [
     {
       "src": "server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["backend/**"],
+        "maxLambdaSize": "15mb"
+      }
     }
   ],
   "routes": [
+    {
+      "src": "/api/test-db",
+      "dest": "server.js"
+    },
+    {
+      "src": "/api/health",
+      "dest": "server.js"
+    },
     {
       "src": "/api/(.*)",
       "dest": "server.js"
@@ -18,5 +30,11 @@
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
   }
 } 
